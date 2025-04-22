@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # API servisi
+  app:
+    build: .
+    container_name: twitter-clone-api
+    restart: always
+    ports:
+      - "3000:5000"
+    depends_on:
+      - mongodb
+    environment:
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongodb:27017/twitter-clone
+      - JWT_SECRET=your_jwt_secret_key
+      - NODE_ENV=production
+    volumes:
+      - ./uploads:/app/uploads
+    networks:
+      - twitter-network
+
+  # MongoDB servisi
+  mongodb:
+    image: mongo:5.0
+    container_name: twitter-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - twitter-network
+
+# Kalıcı veri depolama alanları
+volumes:
+  mongodb-data:
+    driver: local
+
+# Ağ yapılandırması
+networks:
+  twitter-network:
+    driver: bridge 
