@@ -19,6 +19,7 @@ Bu proje, Twitter benzeri bir sosyal medya platformunun backend API'sini içerme
 
 - Node.js (v14 veya üzeri)
 - MongoDB Atlas hesabı
+- Docker ve Docker Compose (opsiyonel)
 
 ### Kurulum
 
@@ -33,11 +34,14 @@ cd twitter-clone-api
 npm install
 ```
 
-3. `.env` dosyasını oluşturun (örnek olarak .env.example dosyasını kullanabilirsiniz)
+3. `.env` dosyasını oluşturun (örnek olarak env.example dosyasını kullanabilirsiniz)
 ```
 PORT=5000
-MONGODB_URI=mongodb+srv://kullanici_adi:sifre@cluster.mongodb.net/twitter-clone
-JWT_SECRET=your_jwt_secret_key
+# Yerel geliştirme için
+MONGODB_URI=mongodb://localhost:27017/twitter-clone
+# Üretim ortamı için kendi MongoDB Atlas bağlantı bilgilerinizi kullanın
+# MONGODB_URI=mongodb+srv://kullanici:sifre@cluster.mongodb.net/veritabani-ismi
+JWT_SECRET=guclu_bir_sifre_kullanin
 NODE_ENV=development
 ```
 
@@ -46,6 +50,25 @@ NODE_ENV=development
 npm run dev  # Geliştirme ortamı için
 npm start    # Prodüksiyon ortamı için
 ```
+
+### Docker ile Çalıştırma
+
+Alternatif olarak, Docker ve Docker Compose kullanarak uygulamayı çalıştırabilirsiniz:
+
+1. env.example dosyasını .env olarak kopyalayın veya kendi .env dosyanızı oluşturun:
+```bash
+cp env.example .env
+```
+
+2. Docker Compose ile uygulamayı başlatın:
+```bash
+docker-compose up
+```
+
+Bu komut, hem API uygulamasını hem de MongoDB veritabanını içeren konteynerları başlatacaktır.
+API'ye http://localhost:3000 üzerinden erişebilirsiniz.
+
+> Not: Docker Compose ile çalıştırıldığında, `.env` dosyasındaki ortam değişkenleri kullanılır. Eğer farklı bir MongoDB bağlantısı kullanmak isterseniz, `.env` dosyasında `MONGODB_URI` değişkenini değiştirin. Örneğin, MongoDB Atlas kullanmak için kendi bağlantı bilgilerinizi ekleyin.
 
 ## API Endpointleri
 
@@ -96,8 +119,10 @@ twitter-clone-api/
 │   └── index.js         # Ana uygulama dosyası
 ├── uploads/             # Yüklenen medya dosyaları
 ├── .env                 # Ortam değişkenleri
-├── .env.example         # Örnek ortam değişkenleri
+├── env.example          # Örnek ortam değişkenleri
 ├── .gitignore           # Git tarafından yok sayılacak dosyalar
+├── Dockerfile           # Docker imajı yapılandırması
+├── docker-compose.yml   # Docker Compose yapılandırması
 ├── package.json         # Proje bağımlılıkları
 └── README.md            # Proje dokümantasyonu
 ```
@@ -110,9 +135,16 @@ Bu API, Render.com üzerinde dağıtılabilir. Bunun için:
 2. Yeni bir Web Service ekleyin
 3. GitHub reposuna bağlanın
 4. Dağıtım ayarlarını yapılandırın:
-   - Build Command: `npm install`
-   - Start Command: `npm start`
-   - Ortam değişkenlerini ekleyin
+   - Environment: Docker
+   - Build Command: `docker build -t twitter-clone-api .`
+   - Start Command: `node src/index.js`
+   - Ortam değişkenlerini ekleyin:
+     - `MONGODB_URI`: MongoDB Atlas bağlantı dizeniz
+     - `JWT_SECRET`: JWT token'lar için güvenli bir anahtar
+     - `NODE_ENV`: production
+     - `PORT`: Render.com tarafından sağlanan port
+
+> Önemli: Hassas bilgilerinizi (MongoDB kullanıcı adı/şifre, JWT anahtarınız) güvende tutmak için bu değerleri daima Render.com'un ortam değişkenleri bölümünden ayarlayın, asla GitHub'a yüklemeyin.
 
 ## Teknolojiler
 
