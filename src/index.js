@@ -42,7 +42,23 @@ app.use('/api/hashtags', hashtagRoutes);
 
 // Ana sayfa rotası
 app.get('/', (req, res) => {
-  res.json({ message: 'Twitter Clone API çalışıyor!' });
+  res.json({ 
+    message: 'Twitter Clone API çalışıyor!',
+    env: {
+      nodeEnv: process.env.NODE_ENV,
+      port: process.env.PORT,
+      mongoDbConnected: mongoose.connection.readyState === 1
+    } 
+  });
+});
+
+// Sağlık kontrolü endpoint'i
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    status: 'UP',
+    timestamp: new Date(),
+    mongoDbConnected: mongoose.connection.readyState === 1
+  });
 });
 
 // 404 hatası için
