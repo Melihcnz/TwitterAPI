@@ -18,8 +18,7 @@ Bu proje, Twitter benzeri bir sosyal medya platformunun backend API'sini içerme
 ### Gereksinimler
 
 - Node.js (v14 veya üzeri)
-- MongoDB Atlas hesabı
-- Docker ve Docker Compose (opsiyonel)
+- MongoDB (yerel kurulum veya MongoDB Atlas hesabı)
 
 ### Kurulum
 
@@ -45,30 +44,18 @@ JWT_SECRET=guclu_bir_sifre_kullanin
 NODE_ENV=development
 ```
 
-4. Uygulamayı başlatın
+4. MongoDB'yi başlatın
+   - Yerel MongoDB kurulumu kullanıyorsanız:
+   ```bash
+   mongod --dbpath /data/db
+   ```
+   - MongoDB Atlas kullanıyorsanız, `.env` dosyasındaki bağlantı bilgilerinizi doğru şekilde ayarlayın
+
+5. Uygulamayı başlatın
 ```bash
 npm run dev  # Geliştirme ortamı için
 npm start    # Prodüksiyon ortamı için
 ```
-
-### Docker ile Çalıştırma
-
-Alternatif olarak, Docker ve Docker Compose kullanarak uygulamayı çalıştırabilirsiniz:
-
-1. env.example dosyasını .env olarak kopyalayın veya kendi .env dosyanızı oluşturun:
-```bash
-cp env.example .env
-```
-
-2. Docker Compose ile uygulamayı başlatın:
-```bash
-docker-compose up
-```
-
-Bu komut, hem API uygulamasını hem de MongoDB veritabanını içeren konteynerları başlatacaktır.
-API'ye http://localhost:3000 üzerinden erişebilirsiniz.
-
-> Not: Docker Compose ile çalıştırıldığında, `.env` dosyasındaki ortam değişkenleri kullanılır. Eğer farklı bir MongoDB bağlantısı kullanmak isterseniz, `.env` dosyasında `MONGODB_URI` değişkenini değiştirin. Örneğin, MongoDB Atlas kullanmak için kendi bağlantı bilgilerinizi ekleyin.
 
 ## API Endpointleri
 
@@ -121,8 +108,6 @@ twitter-clone-api/
 ├── .env                 # Ortam değişkenleri
 ├── env.example          # Örnek ortam değişkenleri
 ├── .gitignore           # Git tarafından yok sayılacak dosyalar
-├── Dockerfile           # Docker imajı yapılandırması
-├── docker-compose.yml   # Docker Compose yapılandırması
 ├── package.json         # Proje bağımlılıkları
 └── README.md            # Proje dokümantasyonu
 ```
@@ -135,8 +120,7 @@ Bu API, Render.com üzerinde dağıtılabilir. Bunun için:
 2. Yeni bir Web Service ekleyin
 3. GitHub reposuna bağlanın
 4. Dağıtım ayarlarını yapılandırın:
-   - Environment: Docker
-   - Build Command: `docker build -t twitter-clone-api .`
+   - Build Command: `npm install`
    - Start Command: `node src/index.js`
    - Ortam değişkenlerini ekleyin:
      - `MONGODB_URI`: MongoDB Atlas bağlantı dizeniz
