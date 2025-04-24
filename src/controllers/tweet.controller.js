@@ -224,16 +224,17 @@ const retweetTweet = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
+    const { quoteContent } = req.body; // Quote tweet için içerik
 
     // Tweet'i bul
-    const tweet = await Tweet.findById(id);
+    const originalTweet = await Tweet.findById(id);
     
-    if (!tweet) {
+    if (!originalTweet) {
       return res.status(404).json({ message: 'Tweet bulunamadı' });
     }
 
     // Kullanıcı daha önce retweet yapmış mı?
-    const isRetweeted = tweet.retweets.includes(userId);
+    const isRetweeted = originalTweet.retweets.includes(userId);
     
     if (isRetweeted) {
       // Retweet'i kaldır
@@ -250,37 +251,46 @@ const retweetTweet = async (req, res) => {
         isRetweet: true
       });
 
-      res.json({ message: 'Retweet kaldırıldı' });
-    } else {
-      // Retweet ekle
-      const updatedTweet = await Tweet.findByIdAndUpdate(
-        id,
-        { $addToSet: { retweets: userId } },
-        { new: true }
-      );
-
-      // Yeni retweet oluştur
-      const retweet = new Tweet({
-        user: userId,
-        retweetData: id,
-        isRetweet: true
-      });
-
-      await retweet.save();
-
-      // Retweet'i kullanıcı bilgisiyle doldurup döndür
-      const populatedRetweet = await Tweet.findById(retweet._id)
-        .populate('user', 'name username profilePicture')
-        .populate({
-          path: 'retweetData',
-          populate: { path: 'user', select: 'name username profilePicture' }
-        });
-
-      res.json({
-        message: 'Tweet retweet edildi',
-        retweet: populatedRetweet
+      return res.json({
+        message: 'Retweet kaldırıldı',
+        tweet: originalTweet
       });
     }
+
+    // Yeni retweet tweet'i oluştur
+    const retweetData = {
+      user: userId,
+      retweetData: id,
+      isRetweet: true,
+      content: quoteContent || originalTweet.content // Quote varsa quote'u, yoksa orijinal içeriği kullan
+    };
+
+    const retweet = new Tweet(retweetData);
+    await retweet.save();
+
+    // Orijinal tweet'e retweet'i ekle
+    await Tweet.findByIdAndUpdate(
+      id,
+      { $addToSet: { retweets: userId } },
+      { new: true }
+    );
+
+    // Retweet'i populate edip döndür
+    const populatedRetweet = await Tweet.findById(retweet._id)
+      .populate('user', 'name username profilePicture')
+      .populate({
+        path: 'retweetData',
+        populate: {
+          path: 'user',
+          select: 'name username profilePicture'
+        }
+      });
+
+    res.json({
+      message: quoteContent ? 'Quote tweet oluşturuldu' : 'Tweet retweetlendi',
+      tweet: populatedRetweet
+    });
+
   } catch (error) {
     console.error('Retweet hatası:', error);
     res.status(500).json({ message: 'Sunucu hatası' });

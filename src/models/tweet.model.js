@@ -4,7 +4,11 @@ const tweetSchema = new mongoose.Schema(
   {
     content: {
       type: String,
-      required: true,
+      required: function() {
+        // Normal tweet'lerde ve quote tweet'lerde içerik zorunlu
+        // Sadece direkt retweet'lerde zorunlu değil
+        return !this.isRetweet || (this.isRetweet && this.content !== this.retweetData?.content);
+      },
       maxlength: 280,
       trim: true
     },
